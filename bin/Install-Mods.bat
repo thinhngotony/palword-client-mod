@@ -1,0 +1,12 @@
+@echo off
+rem One-click install of the bundled catalog mods (UE4SS + PalMiniMap + DungeonBoss timer + Better Night Light).
+rem Requires the payload archives/folders to be present under the vendor\ folder.
+setlocal
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install ue4ss
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install palminimap
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install dungeonbosstimer
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install betternightlight
+echo.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" doctor
+endlocal
+pause

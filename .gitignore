@@ -1,0 +1,23 @@
+# Palworld mod assets, patches, and logs — never committed.
+#
+# `legacy/payload/` contains third-party mod files (PalMiniMap,
+# DungeonBossRespawnMapTimer, Better Night Light) redistributed by the legacy
+# one-click installer. They are NOT part of this project's source and must not
+# be committed to git. The catalog-only model fetches files at install time.
+
+# Third-party mod payloads
+/legacy/payload/
+/vendor/
+
+# User configuration (Nexus API key, paths, enabled set)
+config.json
+*.local.json
+catalog/workshop.local.json
+
+# Local install-state manifest (machines can differ)
+/catalog/installed.json
+
+# Logs / OS cruft
+*.log
+.DS_Store
+Thumbs.db

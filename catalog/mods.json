@@ -1,0 +1,51 @@
+{
+  "schema": "1",
+  "game": "palworld",
+  "gameAppId": 1623730,
+  "mods": [
+    {
+      "id": "ue4ss",
+      "name": "UE4SS (loader/runtime)",
+      "version": "3.0.5",
+      "type": "ue4ss-loader",
+      "side": "client",
+      "requires": [],
+      "source": { "kind": "folder", "file": "ue4ss" },
+      "files": [],
+      "loadOrder": []
+    },
+    {
+      "id": "palminimap",
+      "name": "PalMiniMap",
+      "version": "1.0.0",
+      "type": "ue4ss-lua",
+      "side": "client",
+      "requires": ["ue4ss"],
+      "source": { "kind": "folder", "file": "PalMiniMap" },
+      "files": [],
+      "loadOrder": ["PalMiniMap"]
+    },
+    {
+      "id": "dungeonbosstimer",
+      "name": "DungeonBossRespawnMapTimer",
+      "version": "1.0.0",
+      "type": "ue4ss-lua",
+      "side": "client",
+      "requires": ["ue4ss"],
+      "source": { "kind": "folder", "file": "DungeonBossRespawnMapTimer" },
+      "files": [],
+      "loadOrder": ["DungeonBossRespawnMapTimer"]
+    },
+    {
+      "id": "betternightlight",
+      "name": "Better Night Light",
+      "version": "1.0.0",
+      "type": "pak",
+      "side": "client",
+      "requires": [],
+      "source": { "kind": "file", "file": "BNLrelease_P.pak" },
+      "files": [],
+      "loadOrder": []
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PowerShell version
+        shell: powershell
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          (Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1).Version.ToString()
+
+      - name: Install Pester 5+
+        shell: powershell
+        run: |
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          if (-not (Get-Module -ListAvailable Pester | Where-Object { $_.Version -ge [version]'5.0.0' })) {
+            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
+            Install-Module Pester -Force -Scope CurrentUser -SkipPublisherCheck -MinimumVersion 5.0.0
+          }
+          Get-Module -ListAvailable Pester | Sort-Object Version -Descending | Select-Object -First 1 | Format-List Version, ModuleBase
+
+      - name: Syntax check module + CLI
+        shell: powershell
+        run: |
+          $files = @('src\PalModMan.psm1', 'bin\pwmod.ps1', 'tests\PalModMan.Tests.ps1')
+          foreach ($f in $files) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f, [ref]$null, [ref]$errors)
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$f : $($_.Message) @ line $($_.Extent.StartLineNumber)" }
+              exit 1
+            }
+            Write-Host "Parsed OK: $f"
+          }
+
+      - name: Run Pester
+        shell: powershell
+        run: |
+          Import-Module Pester -MinimumVersion 5.0.0 -ErrorAction Stop
+          $config = New-PesterConfiguration
+          $config.Run.Path = Join-Path $env:GITHUB_WORKSPACE 'tests'
+          $config.Run.PassThru = $true
+          $config.Output.Verbosity = 'Detailed'
+          $r = Invoke-Pester -Configuration $config
+          if ($r.FailedCount -gt 0) { exit 1 }
