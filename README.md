@@ -21,6 +21,7 @@ installer is preserved as a working reference in [`legacy/`](legacy/).
 
 - `install` / `remove` / `enable` / `disable` / `list` / `status` / `doctor`
 - Source adapters: local file, `.zip`/`.7z` archive, folder, **Nexus Mods API**, **Steam Workshop**
+- **`nexus <modId>:<fileId>`** — download and install *any* Nexus mod directly
 - `backup` / `restore` snapshots of your loader + installed mods
 - `doctor` health checks, including the classic *manual-vs-Workshop UE4SS* conflict
 - `-WhatIf` dry-runs everywhere
@@ -41,6 +42,10 @@ pwsh .\bin\pwmod.ps1 install palminimap
 pwsh .\bin\pwmod.ps1 install betternightlight --source "C:\path\to\BNLrelease_P.pak"
 pwsh .\bin\pwmod.ps1 disable dungeonbosstimer
 pwsh .\bin\pwmod.ps1 remove ue4ss
+
+# Install ANY Nexus mod (needs an API key, see set-key below):
+pwsh .\bin\pwmod.ps1 set-key <your-nexus-api-key>
+pwsh .\bin\pwmod.ps1 nexus 2341:7613
 ```
 
 See [docs/USAGE.md](docs/USAGE.md) for the full reference and

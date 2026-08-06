@@ -212,11 +212,30 @@ function Get-ModsTxtState {
 }
 
 # --- catalog ----------------------------------------------------------
-function Get-PalCatalog {
-    $cat = Read-JsonData -Path $script:CatalogFile -Default @{ mods = @() }
-    if ($cat -is [System.Array]) { return $cat }
-    if ($cat.PSObject.Properties['mods']) { $mods = @($cat.mods); return $mods }
+function Get-PalLocalOverlay {
+    # Parse a local catalog overlay file that may be a bare array, a {mods:[...]}
+    # object, or a single mod entry. Returns a list of mod entries.
+    param([string]$Path)
+    $o = Read-JsonData -Path $Path -Default @()
+    if ($o -is [System.Array]) { return @($o) }
+    if ($o.PSObject.Properties['mods']) { return @($o.mods) }
+    if ($o.id) { return @($o) }
     return @()
+}
+
+function Get-PalCatalog {
+    # Base catalog (catalog/mods.json) merged with any local overlays
+    # (catalog/*.local.json). Local entries override base entries by id.
+    $cat = Read-JsonData -Path $script:CatalogFile -Default @{ mods = @() }
+    $mods = if ($cat -is [System.Array]) { @($cat) }
+            elseif ($cat.PSObject.Properties['mods']) { @($cat.mods) }
+            else { @() }
+    foreach ($f in @(Get-ChildItem -LiteralPath (Split-Path -Parent $script:CatalogFile) -Filter '*.local.json' -File -ErrorAction SilentlyContinue)) {
+        foreach ($lm in @(Get-PalLocalOverlay -Path $f.FullName)) {
+            if ($lm.id) { $mods = @($mods | Where-Object { $_.id -ne $lm.id }) + @($lm) }
+        }
+    }
+    return $mods
 }
 
 function Get-PalCatalogMod {
@@ -656,6 +675,107 @@ function Download-Nexus {
     return $OutFile
 }
 
+# --- arbitrary Nexus mod install ----------------------------------------
+function Get-PalNexusLocalFile {
+    return Join-Path (Split-Path -Parent $script:CatalogFile) 'nexus.local.json'
+}
+
+function Get-PalPayloadAnalysis {
+    # Inspect an extracted payload root and guess what it is.
+    # Returns Type ('pak'|'ue4ss-lua'), a suggested folder/name, and the
+    # extracted root to deploy from.
+    param([string]$Root)
+    $paks = @(Get-ChildItem -LiteralPath $Root -Recurse -Filter *.pak -File -ErrorAction SilentlyContinue)
+    $luaRoots = @(
+        Get-ChildItem -LiteralPath $Root -Recurse -Directory -Filter Scripts -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'main.lua') }
+    )
+    if ($paks.Count -gt 0) {
+        # Whole-pak archives (e.g. Pal/Content/Paks/... or bare .pak).
+        $pakRoot = Split-Path -Parent $paks[0].FullName
+        $name = [System.IO.Path]::GetFileNameWithoutExtension($paks[0].Name)
+        return [pscustomobject]@{ Type = 'pak'; Name = $name; Root = $Root; PakFiles = @($paks | ForEach-Object { $_.FullName }) }
+    }
+    if ($luaRoots.Count -gt 0) {
+        $modDir = Split-Path -Parent $luaRoots[0].FullName
+        $name = Split-Path -Leaf $modDir
+        return [pscustomobject]@{ Type = 'ue4ss-lua'; Name = $name; Root = $Root; PakFiles = @() }
+    }
+    # Unknown layout; default to pak (most common for client mods).
+    return [pscustomobject]@{ Type = 'pak'; Name = 'nexusmod'; Root = $Root; PakFiles = @($paks | ForEach-Object { $_.FullName }) }
+}
+
+function Install-NexusMod {
+    # Download and install ANY Nexus mod:  Install-NexusMod -NexusSpec 'nexus:<modId>:<fileId>'
+    # Auto-detects pak vs UE4SS-Lua from the archive contents and registers a
+    # local catalog entry (catalog/nexus.local.json, gitignored) so it can be
+    # enabled/disabled/removed like any other mod.
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$NexusSpec,
+        [string]$Type = '',        # optional override: pak | ue4ss-lua
+        [string]$Name = '',         # optional display name
+        [switch]$WhatIf,
+        [switch]$Force
+    )
+    if ($NexusSpec -notmatch '^nexus:(\d+):(\d+)$') { throw "Expected 'nexus:<modId>:<fileId>', got '$NexusSpec'." }
+    $nx = $matches[1]; $nf = $matches[2]
+    $id = "nexus_${nx}_${nf}"
+
+    $existing = Get-PalCatalogMod -Id $id
+    if ($existing -and -not $Force) { throw "Nexus mod '$id' is already catalogued. Use -Force to re-import." }
+
+    $vendor = Get-PalVendorDir
+    $zip = Join-Path $vendor "nexus_${nx}_${nf}.zip"
+    $stage = Join-Path $vendor "_nexus_${nx}_${nf}"
+
+    if ($WhatIf) {
+        Write-Host "WhatIf: would download nexus:${nx}:${nf} to $zip, analyse, and install as '$id'."
+        return
+    }
+
+    if (-not (Test-Path -LiteralPath $zip)) {
+        Download-Nexus -NexusModId $nx -NexusFileId $nf -OutFile $zip
+    } else {
+        Write-Host "Using cached $zip"
+    }
+
+    # Extract (idempotent per stage).
+    if (-not (Test-Path -LiteralPath $stage)) {
+        New-Item -ItemType Directory -Force -Path $stage | Out-Null
+        Expand-PalArchive -Archive $zip -Destination $stage
+    }
+    $analysis = Get-PalPayloadAnalysis -Root $stage
+    $detectedType = if ($Type) { $Type } else { $analysis.Type }
+    if ($detectedType -notin @('pak', 'ue4ss-lua')) { throw "Unsupported detected type '$detectedType'." }
+    $loadName = if ($Name) { $Name } else { $analysis.Name }
+    $loadOrder = if ($detectedType -eq 'ue4ss-lua') { @($loadName) } else { @() }
+
+    # The stage root itself is the payload source (folder kind).
+    $rel = "_nexus_${nx}_${nf}"
+    $entry = [ordered]@{
+        id = $id
+        name = $loadName
+        version = 'nexus-download'
+        type = $detectedType
+        side = 'client'
+        requires = if ($detectedType -eq 'ue4ss-lua') { @('ue4ss') } else { @() }
+        source = [ordered]@{ kind = 'folder'; file = $rel }
+        files = @()
+        loadOrder = $loadOrder
+        nexus = [ordered]@{ modId = $nx; fileId = $nf }
+    }
+
+    # Persist overlay catalog.
+    $localFile = Get-PalNexusLocalFile
+    $overlay = @(Get-PalLocalOverlay -Path $localFile)
+    $overlay = @($overlay | Where-Object { $_.id -ne $id }) + @($entry)
+    Write-JsonData -Path $localFile -Data $overlay
+
+    Install-PalMod -Id $id
+    Write-Host "Installed Nexus mod as '$id'. Manage it like any catalog mod (enable/disable/remove)."
+}
+
 # --- Steam Workshop ----------------------------------------------------
 function Get-PalSteamWorkshopContentDir {
     $appId = Get-AppIdForLayout
@@ -796,6 +916,6 @@ Export-ModuleMember -Function @(
     'Install-PalMod', 'Uninstall-PalMod', 'Enable-PalMod', 'Disable-PalMod',
     'Backup-PalMods', 'Restore-PalMods', 'Invoke-PalDoctor',
     'Get-PalWorkshopMods', 'Test-PalDuplicateUe4ss', 'Invoke-PalWorkshopAction',
-    'Invoke-PalModAction', 'Import-PalModArchive'
+    'Invoke-PalModAction', 'Import-PalModArchive', 'Install-NexusMod'
 )
 

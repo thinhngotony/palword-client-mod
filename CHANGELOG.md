@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Steam Workshop scanner for app 1623730 (client + Windows dedicated server),
   including duplicate-UE4SS conflict detection.
 - CLI entry point (`pwmod.ps1`) with subcommands and `-WhatIf` support.
+- `nexus <modId>:<fileId>` subcommand (and `install nexus:...`) to download and
+  install any Nexus mod, with automatic pak/Lua layout detection and a git-ignored
+  local catalog overlay (`catalog/*.local.json`).
 - Pester test suite and GitHub Actions CI.
 - Documentation: `README.md`, `docs/ARCHITECTURE.md`, `docs/USAGE.md`.
 

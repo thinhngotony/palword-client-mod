@@ -8,6 +8,7 @@
 #   list                             List catalog mods + state
 #   status <id>                      Detail on one mod
 #   install <id> [src] [-f]          Install a mod (src: path | nexus:modId:fileId | workshop:itemId)
+#   nexus <modId>:<fileId>           Download + install ANY Nexus mod (auto-detect)
 #   remove <id>                      Uninstall a mod
 #   enable <id> / disable <id>       Toggle a mod in mods.txt
 #   doctor                           Health-check the install
@@ -41,6 +42,7 @@ Palworld client mod manager (pwmod)
 list                     List catalog mods with installed/enabled state
 status <id>              Detail on one mod
 install <id> [src] [-f]  Install a mod. src = path | nexus:<modId>:<fileId> | workshop:<itemId>
+nexus <modId>:<fileId>   Download + install ANY Nexus mod (auto-detect pak/Lua)
 remove <id>              Uninstall a mod
 enable <id>|disable <id> Toggle a mod on/off in mods.txt
 doctor                   Health-check the install setup
@@ -57,6 +59,7 @@ Examples:
   pwmod list
   pwmod install palminimap
   pwmod install ue4ss -d
+  pwmod nexus 187:12345
   pwmod set-path "C:\Steam\steamapps\common\Palworld"
   pwmod workshop
 '@
@@ -86,7 +89,16 @@ switch ($cmd.ToLower()) {
     }
     'list'     { Get-PalMod | Format-Table Id, Name, Version, Type, Source, Requires, Installed, Enabled -AutoSize }
     'status'   { if (-not $arg1) { throw 'status needs an id' }; Get-PalModStatus -Id $arg1 | Format-List }
-    'install'  { if (-not $arg1) { throw 'install needs an id' }; Install-PalMod -Id $arg1 -SourceOverride $arg2 -Force:$f -WhatIf:$d }
+    'install'  {
+        if (-not $arg1) { throw 'install needs an id' }
+        if ($arg1 -match '^nexus:\d+:\d+$') { Install-NexusMod -NexusSpec $arg1 -WhatIf:$d -Force:$f }
+        else { Install-PalMod -Id $arg1 -SourceOverride $arg2 -Force:$f -WhatIf:$d }
+    }
+    'nexus'    {
+        # pwmod nexus <modId>:<fileId>  - download and install any Nexus mod
+        if (-not $arg1) { throw 'nexus needs a spec like 12345:67890' }
+        Install-NexusMod -NexusSpec "nexus:$arg1" -WhatIf:$d -Force:$f
+    }
     'remove'   { if (-not $arg1) { throw 'remove needs an id' }; Uninstall-PalMod -Id $arg1 -WhatIf:$d }
     'enable'   { if (-not $arg1) { throw 'enable needs an id' }; Enable-PalMod -Id $arg1 -WhatIf:$d }
     'disable'  { if (-not $arg1) { throw 'disable needs an id' }; Disable-PalMod -Id $arg1 -WhatIf:$d }

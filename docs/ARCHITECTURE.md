@@ -65,6 +65,13 @@ Every recipe declares a `source`. The adapter yields filesystem items for the mo
 A user can override a recipe's source at install time:
 `pwmod install <id> -SourceOverride <path|nexus:<mod>:<file>|workshop:<item>>`.
 
+`pwmod nexus <modId>:<fileId>` goes further: it downloads the file, guesses whether it
+is a `.pak` mod or a UE4SS-Lua mod from the archive contents
+(`Get-PalPayloadAnalysis`), and registers a local entry in
+`catalog/nexus.local.json` (gitignored). `Get-PalCatalog` merges any
+`catalog/*.local.json` overlay on top of the base catalog, so these ad-hoc mods
+support the full lifecycle (`enable`/`disable`/`remove`).
+
 ### Nexus
 
 A free API key is stored as `config.json#nexusApiKey` (`pwmod set-key`). Downloads

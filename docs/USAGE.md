@@ -47,6 +47,20 @@ pwmod install someworkshop -SourceOverride "workshop:3625223587"
 The `nexus:` form downloads via the Nexus API (requires an API key, see below).
 The `workshop:` form uses the item already present in the Steam Workshop cache.
 
+### `nexus <modId>:<fileId>`
+Download and install **any** Nexus mod with one command — no catalog entry needed.
+The archive is fetched from Nexus, its layout is auto-detected (`.pak` vs UE4SS-Lua),
+and a local catalog entry is registered so it can be enabled, disabled, or removed
+like any other mod.
+
+```powershell
+pwmod set-key  <your-nexus-api-key>      # once
+pwmod nexus 2341:7613                    # installs Nexus mod 2341, file 7613
+pwmod nexus 12345:67890 -f              # force re-import/re-install
+```
+
+The resulting entry gets id `nexus_<modId>_<fileId>` (see `pwmod list`).
+
 ### `remove <id>`
 Uninstalls a mod and removes it from the load list.
 
