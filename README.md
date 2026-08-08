@@ -20,6 +20,7 @@ installer is preserved as a working reference in [`legacy/`](legacy/).
 ## Features
 
 - `install` / `remove` / `enable` / `disable` / `list` / `status` / `doctor`
+- Catalog entries for All Storage Slots x10, Base Camp Construction Area x2, and Pal Disassembly Conveyor 100 Slots
 - Source adapters: local file, `.zip`/`.7z` archive, folder, **Nexus Mods API**, **Steam Workshop**
 - **`nexus <modId>:<fileId>`** — download and install *any* Nexus mod directly
 - `backup` / `restore` snapshots of your loader + installed mods

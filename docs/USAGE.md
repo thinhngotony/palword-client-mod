@@ -107,7 +107,10 @@ vendor/ue4ss/                       (extracted UE4SS distribution root)
     ue4ss/Mods/...
 vendor/PalMiniMap/                  (the unpacked PalMiniMap mod folder)
 vendor/DungeonBossRespawnMapTimer/  (the unpacked DungeonBoss mod folder)
-vendor/BNLrelease_P.pak             (the Better Night Light pak)
+vendor/BNLrelease_P.pak                         (the Better Night Light pak)
+vendor/All Storage Slots x10_P.pak               (the storage slots pak)
+vendor/Base Camp Construction Area x2_P.pak      (the base radius pak)
+vendor/Pal Disassembly Conveyor 100 Slots_P.pak   (the conveyor slots pak)
 ```
 
 A recipe can also point at a single archive instead of a folder — change

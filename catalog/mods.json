@@ -46,6 +46,39 @@
       "source": { "kind": "file", "file": "BNLrelease_P.pak" },
       "files": [],
       "loadOrder": []
+    },
+    {
+      "id": "allstorageslotsx10",
+      "name": "All Storage Slots x10",
+      "version": "1.0.0",
+      "type": "pak",
+      "side": "client",
+      "requires": [],
+      "source": { "kind": "file", "file": "All Storage Slots x10_P.pak" },
+      "files": [],
+      "loadOrder": []
+    },
+    {
+      "id": "basecampconstructionareax2",
+      "name": "Base Camp Construction Area x2",
+      "version": "1.0.0",
+      "type": "pak",
+      "side": "client",
+      "requires": [],
+      "source": { "kind": "file", "file": "Base Camp Construction Area x2_P.pak" },
+      "files": [],
+      "loadOrder": []
+    },
+    {
+      "id": "paldisassemblyconveyor100slots",
+      "name": "Pal Disassembly Conveyor 100 Slots",
+      "version": "1.0.0",
+      "type": "pak",
+      "side": "client",
+      "requires": [],
+      "source": { "kind": "file", "file": "Pal Disassembly Conveyor 100 Slots_P.pak" },
+      "files": [],
+      "loadOrder": []
     }
   ]
 }
