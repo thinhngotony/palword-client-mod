@@ -48,13 +48,13 @@
       "loadOrder": []
     },
     {
-      "id": "allstorageslotsx10",
-      "name": "All Storage Slots x10",
+      "id": "easystorageslotsx10",
+      "name": "Easy Storage Slots 10x",
       "version": "1.0.0",
       "type": "pak",
       "side": "client",
       "requires": [],
-      "source": { "kind": "file", "file": "All Storage Slots x10_P.pak" },
+      "source": { "kind": "file", "file": "StorageSlots10x_P.pak" },
       "files": [],
       "loadOrder": []
     },
