@@ -11,13 +11,16 @@ Set-Location $root
 
 $out = Join-Path $root 'dist\palworld-client-mods.zip'
 
-$excludeLeaf = @('config.json', 'installed.json')
+$excludeLeaf = @('config.json', 'installed.json', '.gitignore', 'CHANGELOG.md', 'LICENSE')
 $excludeLeafRegex = '\.local\.json$'
 
 function Test-ExcludedPath {
     param([string]$Rel)
     $rel = $Rel.TrimEnd('\')
     if ($rel -match '^\.git($|\\)') { return $true }
+    if ($rel -match '^\.github($|\\)') { return $true }
+    if ($rel -match '^docs($|\\)') { return $true }
+    if ($rel -match '^tests($|\\)') { return $true }
     if ($rel -eq 'dist') { return $true }
     if ($rel -like 'dist\*') { return $true }
     if ($rel -match '^legacy($|\\)') { return $true }
