@@ -17,6 +17,9 @@ catalog/workshop.local.json
 # Local install-state manifest (machines can differ)
 /catalog/installed.json
 
+# Distributable bundle build output
+/dist/
+
 # Logs / OS cruft
 *.log
 .DS_Store

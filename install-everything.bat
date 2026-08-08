@@ -12,10 +12,14 @@ set "GAME=%~1"
 if defined GAME (
     powershell -NoProfile -ExecutionPolicy Bypass -File "bin\pwmod.ps1" set-path "%GAME%"
     if errorlevel 1 goto :fail
-) else (
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Import-Module '%~dp0src\PalModMan.psm1' -Force; try { Get-PalworldPath | Out-Null; exit 0 } catch { exit 1 }"
-    if errorlevel 1 goto :needpath
+    goto :install
 )
+
+rem Auto-detect - pwmod exits nonzero only when the game path is missing.
+powershell -NoProfile -ExecutionPolicy Bypass -File "bin\pwmod.ps1" list >nul 2>&1
+if errorlevel 1 goto :needpath
+
+:install
 
 echo.
 echo [1/8] UE4SS loader/runtime ...................
@@ -46,8 +50,11 @@ goto :end
 :needpath
 echo.
 echo [ERROR] Could not auto-detect your Palworld install.
-echo Run:   install-everything.bat "C:\Path\To\Palworld"
-echo e.g.   install-everything.bat "C:\Program Files (x86)\Steam\steamapps\common\Palworld"
+echo.
+echo Your Steam library may be on a different drive/folder.
+echo Run this with the exact game folder for THIS machine:
+echo     install-everything.bat "D:\Steam\steamapps\common\Palworld"
+echo (put the path where Palworld actually is on this machine)
 goto :end
 
 :fail
