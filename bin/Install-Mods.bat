@@ -6,7 +6,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install ue4
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install palminimap
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install dungeonbosstimer
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install betternightlight
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install allstorageslotsx10
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install easystorageslotsx10
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install basecampconstructionareax2
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0pwmod.ps1" install paldisassemblyconveyor100slots
 echo.
