@@ -28,6 +28,15 @@ AfterAll {
 }
 
 Describe 'Catalog & listing' {
+    BeforeAll {
+        if (Test-Path -LiteralPath $global:TestSandbox) { Remove-Item -LiteralPath $global:TestSandbox -Recurse -Force }
+        $win = Join-Path $global:TestSandbox 'Pal\Binaries\Win64'
+        New-Item -ItemType Directory -Force -Path (Join-Path $win 'ue4ss\Mods') | Out-Null
+        New-Item -ItemType Directory -Force -Path (Join-Path $global:TestSandbox 'Pal\Content\Paks') | Out-Null
+        New-Item -ItemType File -Force -Path (Join-Path $win 'Palworld-Win64-Shipping.exe') | Out-Null
+        Set-PalConfig -PalworldPath $global:TestSandbox
+    }
+
     It 'lists the bundled mods via the public API' {
         $rows = @(Get-PalMod)
         $rows.Count | Should -BeGreaterThan 0
